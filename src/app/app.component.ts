@@ -1,4 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { OverlayService } from './overlay.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -9,12 +10,18 @@ export class AppComponent implements OnInit{
 
   map!: google.maps.Map;
   @ViewChild('googleMap', {static: true}) googleMap!: any;
-  all_overlay: any[] = [];
+  all_overlay:any[] = [];
   overlay: any;
   selectedShape: any;
+  polygonPaths: any [] = [];
+  selectedShapeId: number | any;
+  polylinePaths: any[] = [];
+
+  constructor(private overlayService: OverlayService) {}
 
   ngOnInit(): void {
       this.initMap();
+      this.getAllOverlay()
       this.drawShape();
       this.createSymbolAndPolyline()
   }
@@ -29,10 +36,70 @@ export class AppComponent implements OnInit{
     const clearBtn = document.getElementById('clear')
     this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(clearBtn)
   }
+  getAllOverlay() {
+    this.overlayService.getAllShape().subscribe((res: any[]) => {
+      this.all_overlay = res;
+      if(this.all_overlay) {
+        for (let overlay of this.all_overlay){
+          const polygon = new google.maps.Polygon({
+            paths: overlay.paths,
+            editable: overlay.editable,
+            draggable: overlay.draggable,
+            fillOpacity: overlay.fillOpacity,
+            fillColor: overlay.fillColor,
+            clickable: overlay.clickable,
+            zIndex: overlay.zIndex
+          })
+          polygon.setMap(this.map)
+          const rectangle = new google.maps.Rectangle({
+            bounds: overlay.bounds,
+            editable: overlay.editable,
+            draggable: overlay.draggable,
+            fillOpacity: overlay.fillOpacity,
+            fillColor: overlay.fillColor,
+            clickable: overlay.clickable,
+            zIndex: overlay.zIndex
+          })
+          rectangle.setMap(this.map)
+          const circle = new google.maps.Circle({
+            radius: overlay.radius,
+            center: overlay.center,
+            editable: overlay.editable,
+            draggable: overlay.draggable,
+            fillOpacity: overlay.fillOpacity,
+            fillColor: overlay.fillColor,
+            clickable: overlay.clickable,
+            zIndex: overlay.zIndex
+          })
+          circle.setMap(this.map)
+          const polyline = new google.maps.Polyline({
+            editable: overlay.editable,
+            draggable: overlay.draggable,
+            clickable: overlay.clickable,
+            zIndex: overlay.zIndex,
+            strokeWeight: overlay.strokeWeight,
+            path: overlay.paths
+          })
+          polyline.setMap(this.map)
+          this.addListenerOnPolygon(polygon, overlay.id)
+          this.addListenerOnPolygon(rectangle, overlay.id)
+          this.addListenerOnPolygon(circle, overlay.id)
+          this.addListenerOnPolygon(polyline, overlay.id)
+        }
+      }
+    })
+
+  }
+
+  addListenerOnPolygon(polygon: any, id:number) {
+    google.maps.event.addListener(polygon, 'click', (event: any) => {
+      this.setSelection(polygon, id)
+    })
+  }
 
   drawShape() {
     var drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: google.maps.drawing.OverlayType.POLYGON,
+      drawingMode: google.maps.drawing.OverlayType.MARKER,
       drawingControl: true,
       drawingControlOptions: {
         position: google.maps.ControlPosition.TOP_CENTER,
@@ -80,27 +147,28 @@ export class AppComponent implements OnInit{
     });
     drawingManager.setMap(this.map)
     google.maps.event.addListener(drawingManager, 'polygoncomplete', function(event: any) {
-
       event.getPath().getLength();
       google.maps.event.addListener(event.getPath(), 'insert_at', function() {
 
         var len = event.getPath().getLength();
         for (var i = 0; i < len; i++) {
-          // console.log(event.getPath().getAt(i).toUrlValue(5));
+          // console.log(event.getPath().getAt(i).toJSON());
         }
       });
       google.maps.event.addListener(event.getPath(), 'set_at', function() {
         var len = event.getPath().getLength();
           for (var i = 0; i < len; i++) {
-              // console.log(event.getPath().getAt(i).toUrlValue(5));
+              const latLngs = {lat: event.getPath().getAt(i).lat() , lng: event.getPath().getAt(i).lng()};
+              console.log(latLngs);
+
           }
       });
   });
 
     google.maps.event.addListener(drawingManager, 'overlaycomplete', (event: any) => {
-
-      this.all_overlay.push(event);
       if ( event.type !== google.maps.drawing.OverlayType.MARKER) {
+        this.saveShape(event);
+
         drawingManager.setDrawingMode(null);
         //select the newly selected object
 
@@ -116,6 +184,97 @@ export class AppComponent implements OnInit{
 
   }
 
+  saveShape(event: any) {
+    if(event.type === google.maps.drawing.OverlayType.POLYGON){
+      this.savePolygon(event);
+      return;
+    }
+    if(event.type === google.maps.drawing.OverlayType.RECTANGLE){
+      this.saveRectangle(event);
+      return;
+    }
+    if(event.type === google.maps.drawing.OverlayType.CIRCLE){
+      this.saveCircle(event);
+      return;
+    }
+    if(event.type === google.maps.drawing.OverlayType.POLYLINE){
+      this.savePolyline(event);
+      return;
+    }
+
+  }
+
+  savePolygon(event: any){
+    var len = event.overlay.getPath().getLength();
+        for (var i = 0; i < len; i++) {
+          const latLngs = {lat: event.overlay.getPath().getAt(i).lat(), lng: event.overlay.getPath().getAt(i).lng()}
+          this.polygonPaths.push(latLngs);
+        }
+        const newPolygon = {
+          paths: this.polygonPaths,
+          clickable: event.overlay.clickable,
+          draggable: event.overlay.draggable,
+          editable: event.overlay.editable,
+          fillColor: event.overlay.fillColor,
+          fillOpacity: event.overlay.fillOpacity,
+          zIndex: event.overlay.zIndex,
+          type: event.type
+        }
+        this.overlayService.saveShapes(newPolygon).subscribe();
+  }
+  saveRectangle(event: any){
+    const bound = event.overlay.getBounds();
+    const bounds: google.maps.LatLngBoundsLiteral = {
+      north: bound.zb.j,
+      south: bound.zb.h,
+      east: bound.Ua.j,
+      west: bound.Ua.h
+    }
+    const newRectangle = {
+      clickable: event.overlay.clickable,
+      draggable: event.overlay.draggable,
+      editable: event.overlay.editable,
+      fillColor: event.overlay.fillColor,
+      fillOpacity: event.overlay.fillOpacity,
+      zIndex: event.overlay.zIndex,
+      bounds,
+      type: event.type
+    }
+    this.overlayService.saveShapes(newRectangle).subscribe();
+  }
+  saveCircle(event: any) {
+    const newCircle = {
+      clickable: event.overlay.clickable,
+      draggable: event.overlay.draggable,
+      editable: event.overlay.editable,
+      fillColor: event.overlay.fillColor,
+      fillOpacity: event.overlay.fillOpacity,
+      zIndex: event.overlay.zIndex,
+      center: event.overlay.center.toJSON(),
+      radius: event.overlay.getRadius(),
+      type: event.type
+    }
+    this.overlayService.saveShapes(newCircle).subscribe()
+
+
+  }
+  savePolyline(event: any) {
+    var len = event.overlay.getPath().getLength();
+    for (var i = 0; i < len; i++) {
+      const latLngs = {lat: event.overlay.getPath().getAt(i).lat(), lng: event.overlay.getPath().getAt(i).lng()}
+      this.polylinePaths.push(latLngs);
+      const newPolyline = {
+        clickable: event.overlay.clickable,
+        draggable: event.overlay.draggable,
+        editable: event.overlay.editable,
+        strokeWeight: event.overlay.strokeWeight,
+        paths: this.polylinePaths,
+        type: event.type
+      }
+      this.overlayService.saveShapes(newPolyline).subscribe()
+    }
+
+  }
   clearSelection() {
     if(this.selectedShape) {
       this.selectedShape.setEditable(false)
@@ -123,19 +282,19 @@ export class AppComponent implements OnInit{
     }
   }
 
-  setSelection(shape: any) {
+  setSelection(shape: any, id?: number) {
     this.clearSelection();
     this.selectedShape = shape;
+    this.selectedShapeId = id;
     shape.setEditable(true)
-    console.log(this.selectedShape);
-    const center = this.selectedShape.getMap();
-    console.log(center);
-
   }
 
   deleteSelectedShape() {
     if(this.selectedShape) {
-      this.selectedShape.setMap(null)
+      if(confirm('Are you sure to delete this shape?')) {
+        this.overlayService.deleteShape(this.selectedShapeId).subscribe()
+        this.selectedShape.setMap(null)
+      }
     }
   }
 

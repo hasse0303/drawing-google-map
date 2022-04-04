@@ -1,0 +1,150 @@
+{
+  "overlays": [
+    {
+      "paths": [
+        {
+          "lat": 10.676809113348265,
+          "lng": 103.50912150597209
+        },
+        {
+          "lat": 10.651335924285423,
+          "lng": 103.49401530480021
+        },
+        {
+          "lat": 10.65032370055343,
+          "lng": 103.51427134728068
+        },
+        {
+          "lat": 10.671410999744555,
+          "lng": 103.52542933678264
+        }
+      ],
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "fillColor": "#3d3d3d",
+      "fillOpacity": 0.2,
+      "zIndex": 0,
+      "type": "polygon",
+      "id": 2
+    },
+    {
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "strokeWeight": 2,
+      "paths": [
+        {
+          "lat": 10.691543064041273,
+          "lng": 103.48876643743931
+        }
+      ],
+      "type": "polyline",
+      "id": 3
+    },
+    {
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "strokeWeight": 2,
+      "paths": [
+        {
+          "lat": 10.691543064041273,
+          "lng": 103.48876643743931
+        },
+        {
+          "lat": 10.697952888324268,
+          "lng": 103.33736110296665
+        }
+      ],
+      "type": "polyline",
+      "id": 4
+    },
+    {
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "strokeWeight": 2,
+      "paths": [
+        {
+          "lat": 10.691543064041273,
+          "lng": 103.48876643743931
+        },
+        {
+          "lat": 10.697952888324268,
+          "lng": 103.33736110296665
+        },
+        {
+          "lat": 10.6510568386845,
+          "lng": 103.3452575263065
+        }
+      ],
+      "type": "polyline",
+      "id": 5
+    },
+    {
+      "paths": [
+        {
+          "lat": 10.676809113348265,
+          "lng": 103.50912150597209
+        },
+        {
+          "lat": 10.651335924285423,
+          "lng": 103.49401530480021
+        },
+        {
+          "lat": 10.65032370055343,
+          "lng": 103.51427134728068
+        },
+        {
+          "lat": 10.671410999744555,
+          "lng": 103.52542933678264
+        },
+        {
+          "lat": 10.681246668180203,
+          "lng": 103.51937819915635
+        },
+        {
+          "lat": 10.68318656350353,
+          "lng": 103.4957747598253
+        },
+        {
+          "lat": 10.690861680010153,
+          "lng": 103.50495864349229
+        }
+      ],
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "fillColor": "#3d3d3d",
+      "fillOpacity": 0.2,
+      "zIndex": 2,
+      "type": "polygon",
+      "id": 6
+    },
+    {
+      "paths": [
+        {
+          "lat": 10.780531772600959,
+          "lng": 103.44441641359506
+        },
+        {
+          "lat": 10.733311196755036,
+          "lng": 103.49316824464975
+        },
+        {
+          "lat": 10.7899749996841,
+          "lng": 103.51994741945444
+        }
+      ],
+      "clickable": true,
+      "draggable": true,
+      "editable": true,
+      "fillColor": "#3d3d3d",
+      "fillOpacity": 0.2,
+      "zIndex": 0,
+      "type": "polygon",
+      "id": 7
+    }
+  ]
+}
